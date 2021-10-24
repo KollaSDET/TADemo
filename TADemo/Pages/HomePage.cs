@@ -20,8 +20,10 @@ namespace TADemo.Pages
             WebDriver = webDriver;
         }
   
-        public IWebElement ProductStore_label => WebDriver.Find(By.Id("nava"), 20);
-      
+        
+        public By label_Xpath => By.XPath("//nav[@id='narvbarx']//a[@id='nava']");
+        public IWebElement ProductStore_label => WebDriver.Find(label_Xpath, 20);
+
         public IWebElement ProductListContainer => WebDriver.Find(By.Id("contcont"), 10);
         public IWebElement AddToCart_button(string btnName) => WebDriver.Find(By.XPath("//div[@id='tbodyid']//a[contains(@class,'btn btn-success') and text() ='"+btnName+"']"),10);
       
@@ -39,40 +41,40 @@ namespace TADemo.Pages
 
         public void ClickMenuItem(string item)
         {
-            var menuItem_Xpath = "//div[@id='contcont']//div[@class='list-group']//a[@class='list-group-item' and contains(text(),item)]";
+            //var menuItem_Xpath = "//div[@id='contcont']//div[@class='list-group']//a[@class='list-group-item' and contains(text(),item)]";
             //IList<IWebElement> pList = ProductListContainer.FindElements(By.Id("itemc"));
             //var mItem = pList.FirstOrDefault(x => x.Text == item);
+
+            var menuItem_Xpath = "//div[@id='contcont']//div[@class='list-group']//a[contains(@onclick,'notebook') and contains(text(),item)]";
             WebDriver.WaitForPageToLoad(By.XPath(menuItem_Xpath),40);
-            var mItem = WebDriver.FindElement(By.XPath("//div[@id='contcont']//div[@class='list-group']//a[contains(@onclick,'notebook') and contains(text(),item)]")); 
-           mItem.Click();
+            var mItem = WebDriver.Find(By.XPath(menuItem_Xpath),10);
+            mItem.Click();
         }
 
 
         public string GetStoreLabelValue()
-        {
-            var label_Xpath = @"//*[@Id='nava']";
-            WebDriver.WaitForPageToLoad(By.XPath(label_Xpath), 40);
+        {            
+            WebDriver.WaitForPageToLoad(label_Xpath, 40);
             return ProductStore_label.Text;
         }
         public string FindProductItemAndClick(string pItem)
         {
             IWebElement card =null;
             string actualProdCost = "";
-            //IList<IWebElement> pcardTitles = pDetailsContainer;//.FindElements(By.ClassName("card-title"));//"//div[@id='tbodyid']//FindElement(By.Id("tbodyid")). //div[@id='contcont']
-         
-            var target_xpath = "//div[@id='contcont']//div[@class='row'and @id='tbodyid']//h4[@class='card-title']//a[contains(text(),pItem)]";// 'Sony vaio i7')]";
+            //var target_xpath = "//div[@id='contcont']//div[@class='row'and @id='tbodyid']//h4[@class='card-title']//a[contains(text(),pItem)]";
+            var target_xpath = "//div[@id='contcont']//h4[@class='card-title']//a[contains(text(),pItem)]";
+            WebDriver.WaitForPageToLoad(By.XPath(target_xpath), 40);
 
-             WebDriver.WaitForPageToLoad(By.XPath(target_xpath), 40);
-
-            IWebElement tile = WebDriver.Find(By.XPath(target_xpath),30);
+            IWebElement tile = WebDriver.Find(By.XPath(target_xpath), 30);
+            var tiles = WebDriver.FindELEMS(By.XPath(target_xpath),30);
+            tile = tiles.FirstOrDefault(x => x.Text.Contains(pItem));
            
             if (!string.IsNullOrEmpty(tile.Text ))
-            {
-                var tiles = WebDriver.FindElements(By.XPath(target_xpath));
-                
-                Assert.AreEqual(pItem, tiles.FirstOrDefault(x => x.Text.Contains(pItem)).Text);
-                actualProdCost = tiles.FirstOrDefault(x => x.Text.Contains(pItem)).FindElement(By.XPath("//parent::h4/following-sibling::h5")).Text;
-                tiles.FirstOrDefault(x => x.Text.Contains(pItem)).Click();
+            {          
+                Assert.AreEqual(pItem, tile.Text);
+                //actualProdCost = tile.FindElement(By.XPath("//parent::h4/following-sibling::h5")).Text;
+                actualProdCost = tile.FindElement(By.XPath("//parent::div[@class='card-block']//child::h5")).Text;
+                tile.Click();
               
             }
             else
