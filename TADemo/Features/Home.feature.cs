@@ -116,6 +116,12 @@ this.ScenarioInitialize(scenarioInfo);
 #line 11
  testRunner.And("I have verified product item \"Sony vaio i7\" on product details page", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
+#line 12
+ testRunner.And("I have clicked on \"Add to cart\" button", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 13
+ testRunner.And("I have accepted an alert as \"Product added\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
             }
             this.ScenarioCleanup();
         }

@@ -29,8 +29,10 @@ namespace TADemo
             string chromeDriverPath = Path.Combine(Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName, "..\\ChromeBrowser");
 
             //string chromeDriverPath = Path.Combine(projectDir, );
-                IWebDriver driver = new ChromeDriver(chromeDriverPath);
-                _objectContainer.RegisterInstanceAs(driver);
+            //ChromeOptions chromeOptions = new ChromeOptions();
+            IWebDriver driver = new ChromeDriver(chromeDriverPath);
+            driver.Manage().Window.Maximize();
+            _objectContainer.RegisterInstanceAs(driver);
             }
 
             [AfterScenario]

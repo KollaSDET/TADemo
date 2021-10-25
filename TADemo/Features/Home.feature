@@ -8,8 +8,6 @@ Scenario: Purchase a Product Item
 	And I have seen "PRODUCT STORE" as the main label
 	And I have clicked on "Laptops" menu item
 	Then I have clicked on "Sony vaio i7" product item
-	And I have verified product item "Sony vaio i7" on product details page
-	#	#| Name         | Price |
-	#	#| Sony vaio i7 | $790  |
-	#And I have clicked on "Add to cart" button
-	#And I have accepted an alert as "Product added"
+	And I have verified product item "Sony vaio i7" on product details page	
+	And I have clicked on "Add to cart" button
+	And I have accepted an alert as "Product added"

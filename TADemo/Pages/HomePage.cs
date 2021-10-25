@@ -22,31 +22,59 @@ namespace TADemo.Pages
   
         
         public By label_Xpath => By.XPath("//nav[@id='narvbarx']//a[@id='nava']");
-        public IWebElement ProductStore_label => WebDriver.Find(label_Xpath, 20);
+        public IWebElement ProductStore_label => WebDriver.Find(label_Xpath, 30);
 
         public IWebElement ProductListContainer => WebDriver.Find(By.Id("contcont"), 10);
-        public IWebElement AddToCart_button(string btnName) => WebDriver.Find(By.XPath("//div[@id='tbodyid']//a[contains(@class,'btn btn-success') and text() ='"+btnName+"']"),10);
+        public IWebElement AddToCart_button(string btnName) => WebDriver.Find(By.XPath("//div[@id='tbodyid']//a[contains(@class,'btn btn-success') and text() ='"+btnName+"']"),20);
       
         public IList<IWebElement> pDetailsContainer => WebDriver.FindELEMS(By.XPath("//div[@id='tbodyid']//*[@class='card-title']"), 60);
  
 
 
-        public IWebElement prdName => WebDriver.Find(By.XPath("//div[@id='tbodyid']//*[@class='name']"), 20);
-        public IWebElement prdPrice => WebDriver.Find(By.XPath("//div[@id='tbodyid']//*[@class='price-container']"),20);
+        public IWebElement prdName => WebDriver.Find(By.XPath("//div[@id='tbodyid']//*[@class='name']"), 40);
+        public IWebElement prdPrice => WebDriver.Find(By.XPath("//div[@id='tbodyid']//*[@class='price-container']"),40);
 
         public void NavigateToHomePage(string url)
         {
+            //WebDriver.Navigate().GoToUrl(url);
             WebDriver.Navigate().GoToUrl(url);
-        }
+            IWebElement elt = null;
+            bool bFlag = false;
+            var wait = new WebDriverWait(WebDriver, TimeSpan.FromSeconds(30));
+            int tries = 0;
+            while ((!bFlag) || tries < 2)
+            {
+                try
+                {
+                    tries++;
 
+                    elt = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("nava")));
+                    
+                    Console.WriteLine("while" + bFlag + "  " + tries);
+                    bFlag = true;
+                    //return bFlag;
+
+                }
+                catch (StaleElementReferenceException)
+                {
+                    bFlag = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.StalenessOf(WebDriver.FindElement(By.Id("nava"))));
+                    //Console.WriteLine(bFlag + "  " + tries);
+                    
+                }
+                    
+            }
+           // return bFlag;
+        }
+       
         public void ClickMenuItem(string item)
         {
             //var menuItem_Xpath = "//div[@id='contcont']//div[@class='list-group']//a[@class='list-group-item' and contains(text(),item)]";
             //IList<IWebElement> pList = ProductListContainer.FindElements(By.Id("itemc"));
             //var mItem = pList.FirstOrDefault(x => x.Text == item);
-
+           
             var menuItem_Xpath = "//div[@id='contcont']//div[@class='list-group']//a[contains(@onclick,'notebook') and contains(text(),item)]";
             WebDriver.WaitForPageToLoad(By.XPath(menuItem_Xpath),40);
+          
             var mItem = WebDriver.Find(By.XPath(menuItem_Xpath),10);
             mItem.Click();
         }
@@ -54,26 +82,24 @@ namespace TADemo.Pages
 
         public string GetStoreLabelValue()
         {            
-            WebDriver.WaitForPageToLoad(label_Xpath, 40);
-            return ProductStore_label.Text;
+           return ProductStore_label.Text;
         }
         public string FindProductItemAndClick(string pItem)
         {
             IWebElement card =null;
             string actualProdCost = "";
-            //var target_xpath = "//div[@id='contcont']//div[@class='row'and @id='tbodyid']//h4[@class='card-title']//a[contains(text(),pItem)]";
-            var target_xpath = "//div[@id='contcont']//h4[@class='card-title']//a[contains(text(),pItem)]";
-            WebDriver.WaitForPageToLoad(By.XPath(target_xpath), 40);
-
+            var target_xpath = "//div[@id='contcont']//h4[@class='card-title']//a[contains(text(),'"+pItem+"')]";
+            //WebDriver.WaitForPageToLoad(By.XPath(target_xpath), 40);
+            //var tilesList = WebDriver.FindMultiple(By.XPath(target_xpath));
+            var textContainer = ProductListContainer.Text;
             IWebElement tile = WebDriver.Find(By.XPath(target_xpath), 30);
-            var tiles = WebDriver.FindELEMS(By.XPath(target_xpath),30);
-            tile = tiles.FirstOrDefault(x => x.Text.Contains(pItem));
-           
-            if (!string.IsNullOrEmpty(tile.Text ))
-            {          
-                Assert.AreEqual(pItem, tile.Text);
-                //actualProdCost = tile.FindElement(By.XPath("//parent::h4/following-sibling::h5")).Text;
-                actualProdCost = tile.FindElement(By.XPath("//parent::div[@class='card-block']//child::h5")).Text;
+           var tiles = WebDriver.FindELEMS(By.XPath(target_xpath),40);
+            // tile = tiles.FirstOrDefault(x => x.Text.Contains(pItem));
+            //var tiles = WebDriver.FindElements(By.XPath(target_xpath));
+            Assert.AreEqual(pItem, WebDriver.FindMultiple(By.XPath(target_xpath)).FirstOrDefault(x => x.Text.Contains(pItem)).Text);
+            if (!string.IsNullOrEmpty(WebDriver.FindMultiple(By.XPath(target_xpath)).FirstOrDefault(x => x.Text.Contains(pItem)).Text ))
+            {
+                actualProdCost = tiles.FirstOrDefault(x => x.Text.Contains(pItem)).FindElement(By.XPath("//parent::div[@class='card-block']//child::h5")).Text;
                 tile.Click();
               
             }
@@ -107,7 +133,12 @@ namespace TADemo.Pages
 
         public void ClickBrowserAlert(string expText)
         {
-            if (WebDriver.SwitchTo().Alert().Text == expText)
+            var wait = new WebDriverWait(WebDriver, TimeSpan.FromSeconds(20));
+
+            wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.AlertIsPresent());
+
+
+            if (WebDriver.SwitchTo().Alert().Text.Contains(expText))
                 WebDriver.SwitchTo().Alert().Accept();
 
         }

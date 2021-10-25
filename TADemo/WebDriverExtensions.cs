@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 
@@ -10,29 +11,88 @@ namespace TADemo
 
         {
 
-
         public static IWebElement Find(this IWebDriver driver, By by, int timeoutInSeconds)
-
         {
-
-            if (timeoutInSeconds > 0)
-
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutInSeconds));
+            IWebElement element = null;
+            wait.Until(d =>
             {
+                try
+                {
+                    element = d.FindElement(by);
+                    if (element.Displayed &&
+                        element.Enabled)
+                    {
+                        return element;
+                    }
+                }
+                catch (StaleElementReferenceException)
+                {
+                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutInSeconds));
 
-                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutInSeconds));
+                    wait.PollingInterval = TimeSpan.FromMilliseconds(1000);
+                    wait.Message = @"Element " + by + " to be searchDefaultWaited not found";
+                    element = driver.FindElement(by);
+                    wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.StalenessOf(element));
+                    return element;
 
-                wait.PollingInterval = TimeSpan.FromMilliseconds(1000);
-                wait.Message = @"Element " + by + " to be searchDefaultWaited not found";
-                return (wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(by)));
-               // return wait.Until(drv => drv.FindElement(by));
+                }
+                catch (NoSuchElementException)
+                {
+                    Console.WriteLine("Element not found: " + by.ToString());
+                    if (d.FindElements(By.XPath("//div[contains(text(),'AADSTS50196')]")).Count > 0)
+                        d.Close();
 
-            }
+                }
+                return null;
 
-            return driver.FindElement(by);
-
+            });
+            return element;
         }
 
 
+        public static IReadOnlyCollection<IWebElement> FindMultiple(this IWebDriver driver, By by)
+        {
+
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(40));
+            IReadOnlyCollection<IWebElement> element = null;
+            try
+            {
+                wait.Until(d =>
+                {
+                    try
+                    {
+                        element = d.FindElements(by);
+
+                        if
+                        (
+                        element.Count > 0 &&
+                        element.ElementAt(0).Displayed &&
+                        element.ElementAt(0).Enabled
+                        )
+
+                        {
+                            return element;
+                        }
+                    }
+
+                    catch (NoSuchElementException)
+                    {
+
+                    }
+                    return null;
+
+                });
+            }
+            catch (WebDriverTimeoutException)
+            {
+
+            }
+
+            return element;
+        }
+
+       
         public static IWebElement WaitForPageToLoad(this IWebDriver driver, By elementLocator, int timeoutInSeconds)
         {
             int tries = 0;
